@@ -141,8 +141,18 @@ decode_string(<<>>,[]) ->
 	{ <<>>, <<>> };
 decode_string(<<$", Rest/binary>>, Acc) ->
 	{ binary:list_to_bin(lists:reverse(Acc)), Rest };
+decode_string(<<$\\ , $\\, String/binary>>, Acc) ->
+	decode_string(String,[ $\\ | Acc ]);
 decode_string(<<$\\ , $", String/binary>>, Acc) ->
 	decode_string(String, [ $" | Acc ]);	
+decode_string(<<$\\ , $n, String/binary>>, Acc) ->
+	decode_string(String, [ 10 | Acc ]);	
+decode_string(<<$\\ , $t, String/binary>>, Acc) ->
+	decode_string(String, [ 8 | Acc ]);	
+decode_string(<<$\\ , $r, String/binary>>, Acc) ->
+	decode_string(String, [ 13 | Acc ]);	
+decode_string(<<$\\, $u, Num:4/binary, String/binary>>, Acc) ->
+	decode_string(String, [ binary_to_integer(Num,16) | Acc]);
 decode_string(<<X:8, String/binary>>, Acc ) ->
 	decode_string(String, [ X | Acc ]).
 
